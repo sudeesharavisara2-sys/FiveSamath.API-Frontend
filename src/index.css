@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-display: "Baloo 2", "Noto Sans Sinhala", sans-serif;
+  --font-sinhala: "Noto Sans Sinhala", "Baloo 2", sans-serif;
+
+  --color-sky: #3FA9F5;
+  --color-sky-dark: #1E88E5;
+  --color-sunshine: #FFC93C;
+  --color-sunshine-dark: #F5A623;
+  --color-grass: #4CD787;
+  --color-grass-dark: #2FB46B;
+  --color-coral: #FF6B6B;
+  --color-coral-dark: #EE4B4B;
+  --color-grape: #9B7BFF;
+  --color-cream: #FFF9EE;
+  --color-ink: #2B2440;
+
+  --radius-blob: 2rem;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-display);
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+}
+
+[lang="si"], .lang-si {
+  font-family: var(--font-sinhala);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--color-sky); border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.card-pop {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.card-pop:hover {
+  transform: translateY(-4px) scale(1.01);
+}
