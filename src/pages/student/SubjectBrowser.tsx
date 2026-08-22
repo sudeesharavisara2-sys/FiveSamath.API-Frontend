@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronRight, BookOpen, Layers, ListChecks } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight, BookOpen, Layers, ListChecks, Sparkles } from "lucide-react";
 import { learningService } from "../../services/learningService";
 import { useLanguage } from "../../context/LanguageContext";
-import Card from "../../components/common/Card";
 import Spinner from "../../components/common/Spinner";
 
-// Practice/Mock-exam entry point: Subject -> TextBook -> Chapter -> Lesson (with quiz).
-// NOTE: the API does not expose a lesson->quiz lookup, so by seed convention the
-// quiz id used for a lesson equals the lesson id (see QuizController.GetQuiz).
 export default function SubjectBrowser({ mode }: { mode: "practice" | "exam" }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -46,118 +43,186 @@ export default function SubjectBrowser({ mode }: { mode: "practice" | "exam" }) 
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-extrabold flex items-center gap-2">
-        <ListChecks className="text-sky-dark" />
-        {mode === "practice" ? t.dashboard.startPractice : t.dashboard.startMockExam}
-      </h1>
+    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+      {/* Header Banner */}
+      <motion.div 
+        initial={{ opacity: 0, y: -15 }} 
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3 bg-gradient-to-r from-indigo-900 via-slate-900 to-purple-950 text-white p-6 rounded-3xl shadow-xl shadow-slate-950/10 relative overflow-hidden"
+      >
+        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+          <Sparkles size={140} />
+        </div>
+        <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md shadow-inner relative z-10">
+          <ListChecks size={26} className="text-sky-300" />
+        </div>
+        <div className="relative z-10">
+          <h1 className="text-2xl font-black tracking-tight">
+            {mode === "practice" ? t.dashboard.startPractice : t.dashboard.startMockExam}
+          </h1>
+          <p className="text-slate-300 text-xs font-medium">Select your learning material to jump straight into action</p>
+        </div>
+      </motion.div>
 
-      <Card>
-        <p className="font-bold text-ink/60 mb-3 flex items-center gap-2">
-          <BookOpen size={16} /> {t.dashboard.subjects}
+      {/* Step 1: Subjects */}
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100">
+        <p className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3.5 flex items-center gap-2">
+          <BookOpen size={15} className="text-sky-500" /> {t.dashboard.subjects}
         </p>
         {l1 ? (
-          <Spinner />
+          <div className="py-8 flex justify-center"><Spinner /></div>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {subjects?.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => {
-                  setSubjectId(s.id);
-                  setBookId(null);
-                  setChapterId(null);
-                }}
-                className={`px-4 py-2 rounded-xl font-semibold border-2 ${
-                  subjectId === s.id ? "border-sky bg-sky/10 text-sky-dark" : "border-ink/10 text-ink/60"
-                }`}
-              >
-                {s.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      {subjectId && (
-        <Card>
-          <p className="font-bold text-ink/60 mb-3 flex items-center gap-2">
-            <Layers size={16} /> Textbooks
-          </p>
-          {l2 ? (
-            <Spinner />
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-2">
-              {books?.map((b) => (
-                <button
-                  key={b.id}
+          <div className="grid sm:grid-cols-3 gap-2.5">
+            {subjects?.map((s) => {
+              const isSelected = subjectId === s.id;
+              return (
+                <motion.button
+                  key={s.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
-                    setBookId(b.id);
+                    setSubjectId(s.id);
+                    setBookId(null);
                     setChapterId(null);
                   }}
-                  className={`text-left px-4 py-3 rounded-xl font-semibold border-2 flex items-center justify-between ${
-                    bookId === b.id ? "border-sky bg-sky/10 text-sky-dark" : "border-ink/10 text-ink/60"
+                  className={`text-left px-4 py-3 rounded-2xl font-bold text-sm border transition-all flex items-center justify-between ${
+                    isSelected 
+                      ? "bg-sky-50 text-sky-700 border-sky-200 shadow-sm" 
+                      : "bg-slate-50/50 text-slate-600 border-slate-100 hover:bg-slate-50"
                   }`}
                 >
-                  {b.title} <ChevronRight size={16} />
-                </button>
-              ))}
-              {books?.length === 0 && <p className="text-ink/40 text-sm">No textbooks yet.</p>}
-            </div>
-          )}
-        </Card>
-      )}
+                  <span>{s.name}</span>
+                  <ChevronRight size={16} className={isSelected ? "opacity-100 text-sky-500" : "opacity-30"} />
+                </motion.button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-      {bookId && (
-        <Card>
-          <p className="font-bold text-ink/60 mb-3">Chapters</p>
-          {l3 ? (
-            <Spinner />
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-2">
-              {chapters?.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setChapterId(c.id)}
-                  className={`text-left px-4 py-3 rounded-xl font-semibold border-2 flex items-center justify-between ${
-                    chapterId === c.id ? "border-sky bg-sky/10 text-sky-dark" : "border-ink/10 text-ink/60"
-                  }`}
-                >
-                  {c.title} <ChevronRight size={16} />
-                </button>
-              ))}
-              {chapters?.length === 0 && <p className="text-ink/40 text-sm">No chapters yet.</p>}
-            </div>
-          )}
-        </Card>
-      )}
+      {/* Step 2: Textbooks */}
+      <AnimatePresence>
+        {subjectId && (
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100"
+          >
+            <p className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3.5 flex items-center gap-2">
+              <Layers size={15} className="text-purple-500" /> Textbooks
+            </p>
+            {l2 ? (
+              <div className="py-8 flex justify-center"><Spinner /></div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                {books?.map((b) => {
+                  const isSelected = bookId === b.id;
+                  return (
+                    <motion.button
+                      key={b.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setBookId(b.id);
+                        setChapterId(null);
+                      }}
+                      className={`text-left px-4 py-3 rounded-2xl font-bold text-sm border transition-all flex items-center justify-between ${
+                        isSelected 
+                          ? "bg-purple-50 text-purple-700 border-purple-200 shadow-sm" 
+                          : "bg-slate-50/50 text-slate-600 border-slate-100 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{b.title}</span> 
+                      <ChevronRight size={16} className={isSelected ? "opacity-100 text-purple-500" : "opacity-30"} />
+                    </motion.button>
+                  );
+                })}
+                {books?.length === 0 && <p className="text-slate-400 text-sm font-medium py-4">No textbooks available yet.</p>}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {chapterId && (
-        <Card>
-          <p className="font-bold text-ink/60 mb-3">Lessons</p>
-          {l4 ? (
-            <Spinner />
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-2">
-              {lessons?.map((les) => (
-                <button
-                  key={les.id}
-                  disabled={!les.hasQuiz}
-                  onClick={() => goToQuiz(les.id)}
-                  className={`text-left px-4 py-3 rounded-xl font-semibold border-2 flex items-center justify-between ${
-                    les.hasQuiz
-                      ? "border-grass/40 bg-grass/5 text-grass-dark hover:bg-grass/15"
-                      : "border-ink/5 text-ink/30 cursor-not-allowed"
-                  }`}
-                >
-                  {les.title} {les.hasQuiz && <ChevronRight size={16} />}
-                </button>
-              ))}
-              {lessons?.length === 0 && <p className="text-ink/40 text-sm">No lessons yet.</p>}
-            </div>
-          )}
-        </Card>
-      )}
+      {/* Step 3: Chapters */}
+      <AnimatePresence>
+        {bookId && (
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100"
+          >
+            <p className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3.5">Chapters</p>
+            {l3 ? (
+              <div className="py-8 flex justify-center"><Spinner /></div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                {chapters?.map((c) => {
+                  const isSelected = chapterId === c.id;
+                  return (
+                    <motion.button
+                      key={c.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setChapterId(c.id)}
+                      className={`text-left px-4 py-3 rounded-2xl font-bold text-sm border transition-all flex items-center justify-between ${
+                        isSelected 
+                          ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm" 
+                          : "bg-slate-50/50 text-slate-600 border-slate-100 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{c.title}</span> 
+                      <ChevronRight size={16} className={isSelected ? "opacity-100 text-indigo-500" : "opacity-30"} />
+                    </motion.button>
+                  );
+                })}
+                {chapters?.length === 0 && <p className="text-slate-400 text-sm font-medium py-4">No chapters found.</p>}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Step 4: Lessons */}
+      <AnimatePresence>
+        {chapterId && (
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100"
+          >
+            <p className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3.5">Lessons & Quizzes</p>
+            {l4 ? (
+              <div className="py-8 flex justify-center"><Spinner /></div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                {lessons?.map((les) => (
+                  <motion.button
+                    key={les.id}
+                    disabled={!les.hasQuiz}
+                    whileHover={les.hasQuiz ? { scale: 1.02 } : {}}
+                    whileTap={les.hasQuiz ? { scale: 0.98 } : {}}
+                    onClick={() => goToQuiz(les.id)}
+                    className={`text-left px-4 py-3 rounded-2xl font-bold text-sm border transition-all flex items-center justify-between ${
+                      les.hasQuiz
+                        ? "bg-emerald-50/70 border-emerald-200 text-emerald-800 hover:bg-emerald-100/80 shadow-sm cursor-pointer" 
+                        : "bg-slate-100/50 border-slate-200/50 text-slate-400 cursor-not-allowed opacity-60"
+                    }`}
+                  >
+                    <span>{les.title}</span> 
+                    {les.hasQuiz && <ChevronRight size={16} className="text-emerald-600" />}
+                  </motion.button>
+                ))}
+                {lessons?.length === 0 && <p className="text-slate-400 text-sm font-medium py-4">No lessons found.</p>}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { LayoutDashboard, Users, BookOpen, Award, ListChecks } from "lucide-react";
+import { motion } from "framer-motion";
+import { LayoutDashboard, Users, BookOpen, Award, ListChecks, Sparkles, ShieldCheck } from "lucide-react";
 import { adminService } from "../../services/adminService";
 import { learningService } from "../../services/learningService";
 import { useLanguage } from "../../context/LanguageContext";
@@ -34,14 +35,14 @@ export default function AdminDashboard() {
       mutationFn: adminService.createSubject,
       onSuccess: () => {
         invalidate("subjects");
-        toast.success("Subject created");
+        toast.success("Subject created successfully!");
       },
     }),
     update: useMutation({
       mutationFn: ({ id, values }: { id: number; values: any }) => adminService.updateSubject(id, values),
       onSuccess: () => {
         invalidate("subjects");
-        toast.success("Subject updated");
+        toast.success("Subject updated successfully!");
       },
     }),
     remove: useMutation({
@@ -58,14 +59,14 @@ export default function AdminDashboard() {
       mutationFn: adminService.createLesson,
       onSuccess: () => {
         invalidate("admin-lessons");
-        toast.success("Lesson created");
+        toast.success("Lesson created successfully!");
       },
     }),
     update: useMutation({
       mutationFn: ({ id, values }: { id: number; values: any }) => adminService.updateLesson(id, values),
       onSuccess: () => {
         invalidate("admin-lessons");
-        toast.success("Lesson updated");
+        toast.success("Lesson updated successfully!");
       },
     }),
     remove: useMutation({
@@ -78,59 +79,103 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-extrabold flex items-center gap-2">
-        <LayoutDashboard className="text-sky-dark" /> {t.admin.title}
-      </h1>
+    <div className="space-y-8 pb-12">
+      {/* Header Banner */}
+      <motion.div 
+        initial={{ opacity: 0, y: -15 }} 
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white p-8 rounded-3xl shadow-xl shadow-slate-950/15 relative overflow-hidden"
+      >
+        <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+          <Sparkles size={200} />
+        </div>
+        <div className="relative z-10 space-y-1.5">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-extrabold tracking-wider uppercase text-indigo-200">
+            <ShieldCheck size={14} className="text-emerald-400" /> Admin Command Center
+          </span>
+          <h1 className="text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-3">
+            {t.admin.title}
+          </h1>
+          <p className="text-indigo-200/70 text-sm font-medium">
+            Manage your platform's core educational data, subjects, and monitoring metrics.
+          </p>
+        </div>
+      </motion.div>
 
+      {/* Analytics Stats Grid */}
       {statsLoading ? (
-        <Spinner />
+        <div className="py-12 flex justify-center"><Spinner /></div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={Users} label="Total Students" value={stats?.totalStudents ?? 0} color="sky" />
           <StatCard icon={ListChecks} label="Total Quizzes Taken" value={stats?.totalQuizzes ?? 0} color="grass" />
-          <StatCard icon={Award} label="Average Score" value={(stats?.averageScore ?? 0).toFixed(1)} color="sunshine" />
+          <StatCard icon={Award} label="Average Score" value={`${Number(stats?.averageScore ?? 0).toFixed(1)}%`} color="sunshine" />
         </div>
       )}
 
+      {/* CRUD Tables Layout */}
       <div className="grid md:grid-cols-2 gap-6">
-        <CrudTable
-          title={t.admin.subjects}
-          items={subjects ?? []}
-          isLoading={subjectsLoading}
-          fields={[{ key: "name", label: "Name" }]}
-          onCreate={(values) => subjectMutations.create.mutate(values)}
-          onUpdate={(id, values) => subjectMutations.update.mutate({ id, values })}
-          onDelete={(id) => subjectMutations.remove.mutate(id)}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100"
+        >
+          <CrudTable
+            title={t.admin.subjects}
+            items={subjects ?? []}
+            isLoading={subjectsLoading}
+            fields={[{ key: "name", label: "Name" }]}
+            onCreate={(values) => subjectMutations.create.mutate(values)}
+            onUpdate={(id, values) => subjectMutations.update.mutate({ id, values })}
+            onDelete={(id) => subjectMutations.remove.mutate(id)}
+          />
+        </motion.div>
 
-        <CrudTable
-          title={t.admin.lessons}
-          items={lessons ?? []}
-          isLoading={lessonsLoading}
-          fields={[
-            { key: "title", label: "Title" },
-            { key: "chapterId", label: "Chapter ID", type: "number" },
-            { key: "orderNumber", label: "Order", type: "number" },
-            { key: "xpReward", label: "XP Reward", type: "number" },
-          ]}
-          onCreate={(values) => lessonMutations.create.mutate(values)}
-          onUpdate={(id, values) => lessonMutations.update.mutate({ id, values })}
-          onDelete={(id) => lessonMutations.remove.mutate(id)}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100"
+        >
+          <CrudTable
+            title={t.admin.lessons}
+            items={lessons ?? []}
+            isLoading={lessonsLoading}
+            fields={[
+              { key: "title", label: "Title" },
+              { key: "chapterId", label: "Chapter ID", type: "number" },
+              { key: "orderNumber", label: "Order", type: "number" },
+              { key: "xpReward", label: "XP Reward", type: "number" },
+            ]}
+            onCreate={(values) => lessonMutations.create.mutate(values)}
+            onUpdate={(id, values) => lessonMutations.update.mutate({ id, values })}
+            onDelete={(id) => lessonMutations.remove.mutate(id)}
+          />
+        </motion.div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-md border-4 border-white p-5">
-        <h3 className="font-extrabold text-lg mb-2 flex items-center gap-2">
-          <BookOpen size={18} /> {t.admin.textbooks} / {t.admin.chapters} / {t.admin.users}
+      {/* Info Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+        className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6"
+      >
+        <h3 className="font-extrabold text-slate-800 text-base mb-2 flex items-center gap-2">
+          <div className="p-2 rounded-xl bg-purple-50 text-purple-600 shadow-sm">
+            <BookOpen size={18} /> 
+          </div>
+          {t.admin.textbooks} / {t.admin.chapters} / {t.admin.users}
         </h3>
-        <p className="text-ink/50 text-sm font-medium">
+        <p className="text-slate-500 text-xs font-medium leading-relaxed">
           Wired the same way as Subjects/Lessons above via <code>adminService</code> — add
           more <code>CrudTable</code> blocks here (textbooks, chapters) as your data grows.
           User management needs a backend endpoint (Admin controller currently has no
           User CRUD routes).
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "success" | "danger" | "ghost";
+  variant?: "primary" | "secondary" | "success" | "danger" | "ghost" | "gradient";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
 }
@@ -14,6 +14,8 @@ const variants: Record<string, string> = {
   success: "bg-grass text-white hover:bg-grass-dark shadow-grass/30",
   danger: "bg-coral text-white hover:bg-coral-dark shadow-coral/30",
   ghost: "bg-white text-ink hover:bg-ink/5 border-2 border-ink/10",
+  gradient:
+    "bg-[linear-gradient(110deg,var(--color-sky),45%,var(--color-grape),55%,var(--color-sky))] bg-[length:200%_100%] text-white shadow-sky/40 hover:bg-[position:100%_0]",
 };
 
 const sizes: Record<string, string> = {
@@ -36,7 +38,7 @@ export default function Button({
       whileTap={{ scale: 0.95 }}
       whileHover={{ scale: disabled ? 1 : 1.03 }}
       disabled={disabled || isLoading}
-      className={`font-semibold rounded-2xl shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`font-semibold rounded-2xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 ${variants[variant]} ${sizes[size]} ${className}`}
       {...(rest as any)}
     >
       {isLoading ? (
