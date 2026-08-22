@@ -20,7 +20,6 @@ import { useLanguage } from "../../context/LanguageContext";
 
 import StatCard from "../../components/dashboard/StatCard";
 import CrudTable from "../../components/admin/CrudTable";
-import ContentManager from "../../components/admin/ContentManager";
 import Spinner from "../../components/common/Spinner";
 
 type MutationValues = Record<string, unknown>;
@@ -662,11 +661,6 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
-
-      {/* CONTENT MANAGER */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
-        <ContentManager />
-      </motion.div>
 
       {/* USER MANAGEMENT */}
       <motion.div
