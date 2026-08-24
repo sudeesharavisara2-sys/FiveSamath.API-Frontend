@@ -7,5 +7,9 @@ export default function Practice() {
 
   if (!quizId) return <SubjectBrowser mode="practice" />;
 
-  return <QuizEngine quizId={Number(quizId)} mode="practice" />;
+  return (
+    <div className="w-full min-h-[calc(100vh-5rem)] text-white">
+      <QuizEngine quizId={Number(quizId)} mode="practice" />
+    </div>
+  );
 }

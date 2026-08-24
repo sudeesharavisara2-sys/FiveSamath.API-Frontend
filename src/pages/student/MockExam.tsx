@@ -7,5 +7,9 @@ export default function MockExam() {
 
   if (!quizId) return <SubjectBrowser mode="exam" />;
 
-  return <QuizEngine quizId={Number(quizId)} mode="exam" durationMinutes={30} />;
+  return (
+    <div className="w-full min-h-[calc(100vh-5rem)] text-white">
+      <QuizEngine quizId={Number(quizId)} mode="exam" durationMinutes={30} />
+    </div>
+  );
 }

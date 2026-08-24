@@ -11,16 +11,16 @@ export default function BadgeShelf({ badges }: { badges: Badge[] }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden"
+      className="bg-slate-900/60 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-slate-800/80 relative overflow-hidden text-white"
     >
       <div className="flex items-center justify-between mb-5">
-        <h3 className="font-bold text-slate-800 text-base flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-amber-500 shadow-sm">
+        <h3 className="font-bold text-white text-base flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <Award size={20} />
           </div>
           {t.dashboard.badges}
         </h3>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/50 text-slate-400">
           {badges.length} Unlocked
         </span>
       </div>
@@ -42,13 +42,13 @@ export default function BadgeShelf({ badges }: { badges: Badge[] }) {
               whileTap={{ scale: 0.95 }}
               transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 20 }}
               title={b.description}
-              className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-colors hover:bg-slate-50 cursor-pointer group"
+              className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-colors hover:bg-slate-800/50 cursor-pointer group"
             >
-              <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-400 to-rose-400 flex items-center justify-center text-2xl shadow-md shadow-orange-500/20 group-hover:shadow-lg group-hover:shadow-orange-500/30 transition-shadow">
+              <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 flex items-center justify-center text-2xl shadow-lg shadow-orange-500/20 group-hover:shadow-amber-500/30 transition-shadow">
                 <span className="filter drop-shadow">{b.icon || "🏅"}</span>
-                <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <span className="text-[11px] font-semibold text-center text-slate-600 line-clamp-1 group-hover:text-slate-900">
+              <span className="text-[11px] font-semibold text-center text-slate-400 line-clamp-1 group-hover:text-slate-200 transition-colors">
                 {b.name}
               </span>
             </motion.div>

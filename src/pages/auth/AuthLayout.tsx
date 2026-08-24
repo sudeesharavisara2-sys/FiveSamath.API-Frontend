@@ -176,12 +176,12 @@ export default function AuthLayout({
           </motion.span>
         ))}
 
-        {/* Glassmorphic Form Card Layout */}
+        {/* Glassmorphic Form Card Layout - Size adjusted to max-w-xl */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-md relative z-20 p-6 sm:p-10 rounded-3xl bg-[#0F173B]/85 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+          className="w-full max-w-xl relative z-20 p-8 sm:p-12 rounded-3xl bg-[#0F173B]/85 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
         >
           {/* Mobile App Branding Header */}
           <motion.div
@@ -207,9 +207,9 @@ export default function AuthLayout({
           </div>
 
           {/* High Contrast Form Elements & Icons Styling */}
-          <div className="relative text-white space-y-4
+          <div className="relative text-white space-y-5
             [&_label]:text-sky-200 [&_label]:font-semibold [&_label]:text-sm [&_label]:mb-1.5 [&_label]:block
-            [&_input]:w-full [&_input]:bg-[#080D2A]/90 [&_input]:border [&_input]:border-sky-500/30 [&_input]:text-white [&_input]:rounded-xl [&_input]:pl-11 [&_input]:pr-4 [&_input]:py-3 [&_input]:outline-none [&_input::placeholder]:text-slate-400 [&_input:focus]:border-sky-400 [&_input:focus]:ring-2 [&_input:focus]:ring-sky-400/30 [&_input]:transition-all
+            [&_input]:w-full [&_input]:bg-[#080D2A]/90 [&_input]:border [&_input]:border-sky-500/30 [&_input]:text-white [&_input]:rounded-xl [&_input]:pl-11 [&_input]:pr-4 [&_input]:py-3.5 [&_input]:outline-none [&_input::placeholder]:text-slate-400 [&_input:focus]:border-sky-400 [&_input:focus]:ring-2 [&_input:focus]:ring-sky-400/30 [&_input]:transition-all
             [&_p]:text-slate-200 [&_span]:text-slate-200 [&_small]:text-slate-300
             [&_a]:text-sky-400 [&_a]:font-bold [&_a:hover]:text-sky-300 [&_a]:transition-colors
             [&_.text-muted]:text-slate-300 [&_.text-gray-500]:text-slate-300 [&_.text-slate-500]:text-slate-300
