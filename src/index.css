@@ -16,18 +16,19 @@
   --color-grape: #9B7BFF;
   --color-cream: #FFF9EE;
   --color-ink: #2B2440;
+  --color-[#060A21]: #060A21;
 
   --radius-blob: 2rem;
 }
 
 html, body, #root {
-  height: 100%;
+  min-height: 100vh;
 }
 
 body {
   font-family: var(--font-display);
-  background-color: var(--color-cream);
-  color: var(--color-ink);
+  background-color: #060A21;
+  color: #FFFFFF;
 }
 
 [lang="si"], .lang-si {
@@ -36,7 +37,7 @@ body {
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--color-sky); border-radius: 999px; }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-track { background: #060A21; }
 
 .card-pop {
   transition: transform .15s ease, box-shadow .15s ease;

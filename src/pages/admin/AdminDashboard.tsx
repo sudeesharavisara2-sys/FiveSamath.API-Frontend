@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +13,9 @@ import {
   FolderTree,
   BookMarked,
   Filter,
+  ChevronRight,
+  Layers,
+  Info,
 } from "lucide-react";
 
 import { adminService } from "../../services/adminService";
@@ -109,7 +112,6 @@ export default function AdminDashboard() {
   const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
     queryKey: ["admin-lessons", activeChapterId],
     queryFn: () => {
-      // If adminService has getLessonsByChapter, use it. Otherwise fallback to getLessons
       if (activeChapterId && adminService.getLessonsByChapter) {
         return adminService.getLessonsByChapter(activeChapterId);
       }
@@ -402,44 +404,63 @@ export default function AdminDashboard() {
   const textBookOptions = textBooks?.map((tb: any) => ({ label: tb.title || tb.book, value: tb.id })) ?? [];
   const chapterOptions = chapters?.map((c: any) => ({ label: c.title, value: c.id })) ?? [];
 
+  // Tab Definitions
+  const tabs = [
+    { id: "subjects", label: "1. Subjects", icon: BookOpen, count: subjects.length },
+    { id: "textbooks", label: "2. Textbooks", icon: BookMarked, count: textBooks.length },
+    { id: "chapters", label: "3. Chapters", icon: FolderTree, count: chapters.length },
+    { id: "lessons", label: "4. Lessons", icon: Sparkles, count: filteredLessons.length },
+  ] as const;
+
   return (
-    <div className="space-y-8 pb-12">
-      {/* HEADER */}
+    <div className="space-y-8 pb-16">
+      {/* HERO HEADER */}
       <motion.div
-        initial={{ opacity: 0, y: -15 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white p-8 rounded-3xl shadow-xl shadow-slate-950/15 relative overflow-hidden"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 p-6 md:p-8 shadow-2xl"
       >
-        <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-          <Sparkles size={200} />
+        <div className="absolute -right-12 -top-12 opacity-10 pointer-events-none text-indigo-400">
+          <Sparkles size={260} />
         </div>
+        <div className="absolute right-1/3 bottom-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-1.5">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-extrabold tracking-wider uppercase text-indigo-200">
-            <ShieldCheck size={14} className="text-emerald-400" />
-            Admin Command Center
-          </span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-xs font-bold tracking-wider uppercase text-indigo-300 backdrop-blur-md">
+              <ShieldCheck size={14} className="text-emerald-400" />
+              Admin Command Center
+            </div>
 
-          <h1 className="text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-3">
-            <LayoutDashboard size={30} className="text-indigo-300" />
-            {t.admin.title}
-          </h1>
+            <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
+              <LayoutDashboard size={32} className="text-indigo-400" />
+              {t.admin.title}
+            </h1>
 
-          <p className="text-indigo-200/70 text-sm font-medium">
-            Manage your platform's educational content and monitoring metrics.
-          </p>
+            <p className="text-slate-300 text-sm max-w-xl font-medium leading-relaxed">
+              Manage educational curriculum hierarchy, configure content levels, and monitor platform performance.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 bg-slate-800/60 backdrop-blur-md border border-slate-700/60 rounded-2xl p-3.5 px-5 self-start md:self-auto">
+            <Layers className="text-indigo-400" size={24} />
+            <div>
+              <p className="text-xs font-semibold text-slate-400">Hierarchy Depth</p>
+              <p className="text-sm font-bold text-white">4 Levels Active</p>
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* STATISTICS */}
+      {/* OVERVIEW METRICS / STATS */}
       {statsLoading ? (
-        <div className="py-12 flex justify-center">
+        <div className="py-12 flex justify-center bg-slate-900/40 rounded-3xl border border-slate-800">
           <Spinner />
         </div>
       ) : statsError ? (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-5 text-center">
-          <p className="text-red-600 font-semibold">Failed to load admin statistics.</p>
+        <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-5 text-center backdrop-blur-md">
+          <p className="text-rose-400 font-semibold text-sm">Failed to load platform statistics.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -449,71 +470,53 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* EDUCATIONAL DATA HIERARCHY MANAGER */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
+      {/* CURRICULUM MANAGEMENT SUITE */}
+      <div className="bg-slate-900/70 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-slate-800/80 space-y-6">
         
-        {/* TAB NAVIGATION */}
-        <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-4">
-          <button
-            onClick={() => setActiveTab("subjects")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
-              activeTab === "subjects"
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            <BookOpen size={18} />
-            1. Subjects
-          </button>
-
-          <button
-            onClick={() => setActiveTab("textbooks")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
-              activeTab === "textbooks"
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            <BookMarked size={18} />
-            2. TextBooks
-          </button>
-
-          <button
-            onClick={() => setActiveTab("chapters")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
-              activeTab === "chapters"
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            <FolderTree size={18} />
-            3. Chapters
-          </button>
-
-          <button
-            onClick={() => setActiveTab("lessons")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
-              activeTab === "lessons"
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            <Sparkles size={18} />
-            4. Lessons
-          </button>
+        {/* STEP-BY-STEP TAB NAVIGATION */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-800/80 pb-5">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`relative flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-sm transition-all duration-200 outline-none ${
+                  isActive
+                    ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/30 border border-indigo-400/30"
+                    : "bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent"
+                }`}
+              >
+                <Icon size={18} className={isActive ? "text-indigo-200" : "text-slate-400"} />
+                <span>{tab.label}</span>
+                <span
+                  className={`ml-1 text-xs px-2 py-0.5 rounded-full font-extrabold ${
+                    isActive ? "bg-indigo-900/80 text-indigo-100" : "bg-slate-700/50 text-slate-400"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* CASCADING FILTER CONTROLS FOR TEXTBOOKS, CHAPTERS & LESSONS */}
+        {/* CASCADING BREADCRUMB FILTERS */}
         {activeTab !== "subjects" && (
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 text-slate-700 font-bold text-sm">
-              <Filter size={16} className="text-indigo-600" />
-              Filter Content:
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center gap-4 text-sm"
+          >
+            <div className="flex items-center gap-2 text-indigo-300 font-bold px-2">
+              <Filter size={16} />
+              <span>Scope Filters:</span>
             </div>
 
-            {/* Subject Selector */}
+            {/* Subject Dropdown */}
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-slate-500">Subject:</label>
+              <span className="text-xs font-semibold text-slate-400">Subject</span>
               <select
                 value={activeSubjectId ?? ""}
                 onChange={(e) => {
@@ -522,9 +525,9 @@ export default function AdminDashboard() {
                   setSelectedBookId(null);
                   setSelectedChapterId(null);
                 }}
-                className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
               >
-                {subjectOptions.length === 0 && <option value="">No subjects available</option>}
+                {subjectOptions.length === 0 && <option value="">No subjects found</option>}
                 {subjectOptions.map((s) => (
                   <option key={s.value} value={s.value}>
                     {s.label}
@@ -533,162 +536,189 @@ export default function AdminDashboard() {
               </select>
             </div>
 
-            {/* Textbook Selector */}
+            {/* Textbook Dropdown */}
             {(activeTab === "chapters" || activeTab === "lessons") && (
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-semibold text-slate-500">Textbook:</label>
-                <select
-                  value={activeBookId ?? ""}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setSelectedBookId(val);
-                    setSelectedChapterId(null);
-                  }}
-                  className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
-                >
-                  {textBookOptions.length === 0 && <option value="">No textbooks available</option>}
-                  {textBookOptions.map((tb) => (
-                    <option key={tb.value} value={tb.value}>
-                      {tb.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <>
+                <ChevronRight size={14} className="text-slate-600" />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-400">Textbook</span>
+                  <select
+                    value={activeBookId ?? ""}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setSelectedBookId(val);
+                      setSelectedChapterId(null);
+                    }}
+                    className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    {textBookOptions.length === 0 && <option value="">No textbooks found</option>}
+                    {textBookOptions.map((tb) => (
+                      <option key={tb.value} value={tb.value}>
+                        {tb.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
 
-            {/* Chapter Selector */}
+            {/* Chapter Dropdown */}
             {activeTab === "lessons" && (
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-semibold text-slate-500">Chapter:</label>
-                <select
-                  value={activeChapterId ?? ""}
-                  onChange={(e) => setSelectedChapterId(Number(e.target.value))}
-                  className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
-                >
-                  {chapterOptions.length === 0 && <option value="">No chapters available</option>}
-                  {chapterOptions.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <>
+                <ChevronRight size={14} className="text-slate-600" />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-400">Chapter</span>
+                  <select
+                    value={activeChapterId ?? ""}
+                    onChange={(e) => setSelectedChapterId(Number(e.target.value))}
+                    className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    {chapterOptions.length === 0 && <option value="">No chapters found</option>}
+                    {chapterOptions.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
-          </div>
+          </motion.div>
         )}
 
-        {/* TAB CONTENT */}
-        <div>
-          {activeTab === "subjects" && (
-            <CrudTable
-              title="Subject Management"
-              items={subjects ?? []}
-              isLoading={subjectsLoading}
-              fields={[{ key: "name", label: "Name" }]}
-              onCreate={(v) => subjectCreateMutation.mutateAsync(v)}
-              onUpdate={(id, v) => subjectUpdateMutation.mutateAsync({ id, values: v })}
-              onDelete={(id) => subjectDeleteMutation.mutate(id)}
-            />
-          )}
+        {/* ACTIVE MANAGEMENT TABLE */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === "subjects" && (
+              <CrudTable
+                title="Subject Management"
+                items={subjects ?? []}
+                isLoading={subjectsLoading}
+                fields={[{ key: "name", label: "Name" }]}
+                onCreate={(v) => subjectCreateMutation.mutateAsync(v)}
+                onUpdate={(id, v) => subjectUpdateMutation.mutateAsync({ id, values: v })}
+                onDelete={(id) => subjectDeleteMutation.mutate(id)}
+              />
+            )}
 
-          {activeTab === "textbooks" && (
-            <CrudTable
-              title="TextBook Management"
-              items={textBooks ?? []}
-              isLoading={textBooksLoading}
-              fields={[
-                { key: "title", label: "Title" },
-                { key: "grade", label: "Grade" },
-                {
-                  key: "subjectId",
-                  label: "Subject",
-                  type: "select",
-                  options: subjectOptions,
-                },
-                { key: "coverImageUrl", label: "Cover Image URL" },
-              ]}
-              onCreate={(v) => textBookCreateMutation.mutateAsync(v)}
-              onUpdate={(id, v) => textBookUpdateMutation.mutateAsync({ id, values: v })}
-              onDelete={(id) => textBookDeleteMutation.mutate(id)}
-            />
-          )}
+            {activeTab === "textbooks" && (
+              <CrudTable
+                title="TextBook Management"
+                items={textBooks ?? []}
+                isLoading={textBooksLoading}
+                fields={[
+                  { key: "title", label: "Title" },
+                  { key: "grade", label: "Grade" },
+                  {
+                    key: "subjectId",
+                    label: "Subject",
+                    type: "select",
+                    options: subjectOptions,
+                  },
+                  { key: "coverImageUrl", label: "Cover Image URL" },
+                ]}
+                onCreate={(v) => textBookCreateMutation.mutateAsync(v)}
+                onUpdate={(id, v) => textBookUpdateMutation.mutateAsync({ id, values: v })}
+                onDelete={(id) => textBookDeleteMutation.mutate(id)}
+              />
+            )}
 
-          {activeTab === "chapters" && (
-            <CrudTable
-              title="Chapter Management"
-              items={chapters ?? []}
-              isLoading={chaptersLoading}
-              fields={[
-                { key: "title", label: "Title" },
-                {
-                  key: "textBookId",
-                  label: "Text Book",
-                  type: "select",
-                  options: textBookOptions,
-                },
-                { key: "orderNumber", label: "Order Number", type: "number" },
-              ]}
-              onCreate={(v) => chapterCreateMutation.mutateAsync(v)}
-              onUpdate={(id, v) => chapterUpdateMutation.mutateAsync({ id, values: v })}
-              onDelete={(id) => chapterDeleteMutation.mutate(id)}
-            />
-          )}
+            {activeTab === "chapters" && (
+              <CrudTable
+                title="Chapter Management"
+                items={chapters ?? []}
+                isLoading={chaptersLoading}
+                fields={[
+                  { key: "title", label: "Title" },
+                  {
+                    key: "textBookId",
+                    label: "Text Book",
+                    type: "select",
+                    options: textBookOptions,
+                  },
+                  { key: "orderNumber", label: "Order Number", type: "number" },
+                ]}
+                onCreate={(v) => chapterCreateMutation.mutateAsync(v)}
+                onUpdate={(id, v) => chapterUpdateMutation.mutateAsync({ id, values: v })}
+                onDelete={(id) => chapterDeleteMutation.mutate(id)}
+              />
+            )}
 
-          {activeTab === "lessons" && (
-            <CrudTable
-              title="Lesson Management"
-              items={filteredLessons ?? []}
-              isLoading={lessonsLoading}
-              fields={[
-                { key: "title", label: "Title" },
-                {
-                  key: "chapterId",
-                  label: "Chapter",
-                  type: "select",
-                  options: chapterOptions,
-                },
-                { key: "content", label: "Lesson Content", type: "textarea" },
-                { key: "videoUrl", label: "Video URL" },
-                { key: "animationUrl", label: "Animation URL" },
-                { key: "orderNumber", label: "Order Number", type: "number" },
-                { key: "xpReward", label: "XP Reward", type: "number" },
-                { key: "hasQuiz", label: "Has Quiz", type: "checkbox" },
-              ]}
-              onCreate={(v) => lessonCreateMutation.mutateAsync(v)}
-              onUpdate={(id, v) => lessonUpdateMutation.mutateAsync({ id, values: v })}
-              onDelete={(id) => lessonDeleteMutation.mutate(id)}
-            />
-          )}
-        </div>
+            {activeTab === "lessons" && (
+              <CrudTable
+                title="Lesson Management"
+                items={filteredLessons ?? []}
+                isLoading={lessonsLoading}
+                fields={[
+                  { key: "title", label: "Title" },
+                  {
+                    key: "chapterId",
+                    label: "Chapter",
+                    type: "select",
+                    options: chapterOptions,
+                  },
+                  { key: "content", label: "Lesson Content", type: "textarea" },
+                  { key: "videoUrl", label: "Video URL" },
+                  { key: "animationUrl", label: "Animation URL" },
+                  { key: "orderNumber", label: "Order Number", type: "number" },
+                  { key: "xpReward", label: "XP Reward", type: "number" },
+                  { key: "hasQuiz", label: "Has Quiz", type: "checkbox" },
+                ]}
+                onCreate={(v) => lessonCreateMutation.mutateAsync(v)}
+                onUpdate={(id, v) => lessonUpdateMutation.mutateAsync({ id, values: v })}
+                onDelete={(id) => lessonDeleteMutation.mutate(id)}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* USER MANAGEMENT */}
+      {/* USER MANAGEMENT SECTION */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-        className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6"
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-slate-800 p-6 flex items-start gap-4"
       >
-        <h3 className="font-extrabold text-slate-800 text-base mb-2 flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-purple-50 text-purple-600 shadow-sm">
-            <Users size={18} />
-          </div>
-          {t.admin.users}
-        </h3>
-        <p className="text-slate-500 text-xs font-medium leading-relaxed">
-          User management needs a backend endpoint. This section will be available once the Admin User CRUD API is implemented.
-        </p>
+        <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+          <Users size={22} />
+        </div>
+        <div>
+          <h3 className="font-bold text-white text-base flex items-center gap-2">
+            {t.admin.users}
+            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
+              Upcoming
+            </span>
+          </h3>
+          <p className="text-slate-400 text-xs font-medium leading-relaxed mt-1 flex items-center gap-1.5">
+            <Info size={14} className="text-slate-500 shrink-0" />
+            User management requires backend CRUD endpoints. This tab will become interactive once the User Management API is integrated.
+          </p>
+        </div>
       </motion.div>
 
-      {/* MUTATION STATUS */}
-      {isAnyMutationLoading && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <div className="flex items-center gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl">
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            <span className="text-sm font-semibold">Saving changes...</span>
-          </div>
-        </div>
-      )}
+      {/* MUTATION LOADING FLOATING BADGE */}
+      <AnimatePresence>
+        {isAnyMutationLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 right-6 z-50"
+          >
+            <div className="flex items-center gap-3 bg-slate-900 border border-indigo-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-lg">
+              <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm font-semibold tracking-wide">Saving changes...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
