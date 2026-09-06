@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import type { UserRole } from "../../types";
 import Spinner from "./Spinner";
+import { getDashboardPath } from "../../utils/navigation";
 
 export default function ProtectedRoute({
   children,
@@ -15,7 +16,7 @@ export default function ProtectedRoute({
 
   if (isLoading) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to={getDashboardPath(user.role)} replace />;
 
   return <>{children}</>;
 }

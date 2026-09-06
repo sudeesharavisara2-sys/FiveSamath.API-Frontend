@@ -13,7 +13,8 @@ export default function ResultsModal({
   onRetry: () => void;
 }) {
   const { t } = useLanguage();
-  const pct = result.total === 0 ? 0 : Math.round((result.score / result.total) * 100);
+  const total = result.total ?? result.totalQuestions;
+  const pct = total === 0 ? 0 : Math.round((result.score / total) * 100);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4">
@@ -34,19 +35,19 @@ export default function ResultsModal({
 
         <h2 className="text-2xl font-extrabold">{t.quiz.yourScore}</h2>
         <p className="text-5xl font-black text-sky-dark my-3">
-          {result.score}/{result.total}
+          {result.score}/{total}
         </p>
         <p className="text-ink/50 font-semibold mb-2">{pct}%</p>
 
         <div className="inline-flex items-center gap-1.5 bg-sunshine/20 text-sunshine-dark font-bold px-4 py-2 rounded-full mb-6">
-          <Zap size={16} /> +{result.xp} XP
+          <Zap size={16} /> +{result.xp ?? result.xpEarned} XP
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button variant="ghost" onClick={onRetry}>
             <RotateCcw size={16} /> {t.quiz.tryAgain}
           </Button>
-          <Link to="/">
+          <Link to="/student">
             <Button variant="primary" className="w-full">
               {t.quiz.backHome}
             </Button>

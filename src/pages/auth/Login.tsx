@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { LogIn, Mail, Lock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
-import AuthLayout from "./AuthLayout";
+import AuthLayout from "../../components/auth/AuthLayout";
 import InputField from "../../components/common/InputField";
 import Button from "../../components/common/Button";
+import { getDashboardPath } from "../../utils/navigation";
 
 const fieldVariants = {
   hidden: { opacity: 0, y: 14 },
@@ -20,20 +21,24 @@ const fieldVariants = {
 
 export default function Login() {
   const { t } = useLanguage();
-  const { login } = useAuth();
+  const { login, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    if (!authLoading && user) navigate(getDashboardPath(user.role), { replace: true });
+  }, [authLoading, navigate, user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const res = await login({ email, password });
-      toast.success(`Welcome back, ${res.name}! 🎉`);
-      navigate(res.role === "Admin" ? "/admin" : res.role === "Parent" ? "/parent" : "/");
+      toast.success(`${t.auth.welcomeBack}, ${res.name}!`);
+      navigate(getDashboardPath(res.role), { replace: true });
     } catch (err: any) {
       toast.error(err?.response?.data ?? t.common.error);
     } finally {
@@ -42,7 +47,7 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout title={t.auth.login}>
+    <AuthLayout title={t.auth.signIn} subtitle={t.auth.loginSubtitle}>
       <form onSubmit={handleSubmit}>
         <motion.div variants={fieldVariants} initial="hidden" animate="show" custom={0}>
           <InputField
@@ -50,6 +55,7 @@ export default function Login() {
             icon={Mail}
             type="email"
             required
+            placeholder={t.auth.emailPlaceholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -61,6 +67,7 @@ export default function Login() {
             icon={Lock}
             isPassword
             required
+            placeholder={t.auth.passwordPlaceholder}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -68,7 +75,7 @@ export default function Login() {
 
         <motion.div variants={fieldVariants} initial="hidden" animate="show" custom={2}>
           <Button type="submit" variant="gradient" isLoading={isLoading} className="w-full mt-2">
-            <LogIn size={18} /> {t.auth.login}
+            <LogIn size={18} /> {isLoading ? t.auth.signingIn : t.auth.signIn}
           </Button>
         </motion.div>
       </form>
@@ -81,7 +88,7 @@ export default function Login() {
       >
         {t.auth.noAccount}{" "}
         <Link to="/register" className="text-sky-dark font-bold hover:underline">
-          {t.auth.register}
+          {t.auth.createAccount}
         </Link>
       </motion.p>
     </AuthLayout>

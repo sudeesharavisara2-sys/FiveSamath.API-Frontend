@@ -50,9 +50,9 @@ export default function InputField({
         {isPassword && (
           <button
             type="button"
-            tabIndex={-1}
+            aria-label={show ? "Hide password" : "Show password"}
             onClick={() => setShow((s) => !s)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/30 hover:text-ink/60 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-ink/30 transition-colors hover:text-ink/60 focus:outline-none focus:ring-2 focus:ring-sky"
           >
             {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

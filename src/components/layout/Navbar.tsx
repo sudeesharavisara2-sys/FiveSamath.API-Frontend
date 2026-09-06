@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Language } from "../../types";
+import { getDashboardPath } from "../../utils/navigation";
 
 const LANGS: { code: Language; label: string }[] = [
   { code: "en", label: "EN" },
@@ -18,25 +19,28 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const homePath =
-    user?.role === "Admin" ? "/admin" : user?.role === "Parent" ? "/parent" : "/";
+  const homePath = getDashboardPath(user?.role);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    navigate("/", { replace: true });
   };
 
   const links = user
     ? user.role === "Student"
       ? [
-          { to: "/", label: t.nav.dashboard },
+          { to: "/student", label: t.nav.dashboard },
           { to: "/practice", label: t.nav.practice },
           { to: "/mock-exam", label: t.nav.mockExam },
           { to: "/leaderboard", label: t.nav.leaderboard },
         ]
       : user.role === "Parent"
       ? [{ to: "/parent", label: t.nav.dashboard }]
-      : [{ to: "/admin", label: t.nav.dashboard }]
+       : [
+          { to: "/admin", label: t.nav.dashboard },
+          { to: "/admin/content", label: "Content Studio" },
+          { to: "/admin/textbooks", label: t.admin.textbooks },
+        ]
     : [];
 
   return (

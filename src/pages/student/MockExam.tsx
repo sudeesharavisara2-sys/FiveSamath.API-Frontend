@@ -5,7 +5,7 @@ import SubjectBrowser from "./SubjectBrowser";
 export default function MockExam() {
   const { quizId } = useParams();
 
-  if (!quizId) return <SubjectBrowser mode="exam" />;
+  if (!quizId) return <SubjectBrowser />;
 
   return <QuizEngine quizId={Number(quizId)} mode="exam" durationMinutes={30} />;
 }

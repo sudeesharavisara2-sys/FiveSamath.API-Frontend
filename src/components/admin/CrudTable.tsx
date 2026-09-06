@@ -75,7 +75,12 @@ export default function CrudTable<T extends { id: number } & Record<string, any>
               label={f.label}
               type={f.type ?? "text"}
               value={form[f.key] ?? ""}
-              onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value,
+                }))
+              }
             />
           ))}
           <div className="flex gap-2">
@@ -103,7 +108,12 @@ export default function CrudTable<T extends { id: number } & Record<string, any>
                       label={f.label}
                       type={f.type ?? "text"}
                       value={form[f.key] ?? ""}
-                      onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                      onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value,
+                }))
+              }
                     />
                   ))}
                   <div className="flex gap-2">

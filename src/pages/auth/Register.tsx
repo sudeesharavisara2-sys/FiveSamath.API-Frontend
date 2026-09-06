@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { UserPlus, User, Mail, Lock, Check } from "lucide-react";
+import { UserPlus, User, Mail, Lock, Check, GraduationCap, RefreshCw } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
-import AuthLayout from "./AuthLayout";
+import AuthLayout from "../../components/auth/AuthLayout";
 import InputField from "../../components/common/InputField";
 import Button from "../../components/common/Button";
-
-const API_URL = "http://localhost:5153/api";
+import { useAuth } from "../../context/AuthContext";
+import { useGrades } from "../../hooks/useStudentDashboard";
+import type { Grade } from "../../types";
+import { getDashboardPath } from "../../utils/navigation";
 
 const fieldVariants = {
   hidden: { opacity: 0, y: 14 },
@@ -19,14 +21,13 @@ const fieldVariants = {
   }),
 };
 
-function PasswordStrength({ password }: { password: string }) {
+function PasswordStrength({ password, labels }: { password: string; labels: string[] }) {
   const score =
     (password.length >= 6 ? 1 : 0) +
     (password.length >= 10 ? 1 : 0) +
     (/[0-9]/.test(password) ? 1 : 0) +
     (/[A-Z]/.test(password) ? 1 : 0);
 
-  const labels = ["Too short", "Weak", "Okay", "Good", "Strong"];
   const colors = ["bg-coral", "bg-coral", "bg-sunshine-dark", "bg-grass", "bg-grass-dark"];
 
   if (!password) return null;
@@ -53,69 +54,52 @@ function PasswordStrength({ password }: { password: string }) {
 export default function Register() {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { register, user, isLoading: authLoading } = useAuth();
+  const { data: grades = [], isLoading: gradesLoading, isError: gradesFailed, refetch } = useGrades();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) navigate(getDashboardPath(user.role), { replace: true });
+  }, [authLoading, navigate, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      setIsLoading(false);
+      toast.error(t.auth.passwordTooShort);
       return;
     }
 
+    if (!selectedGradeId) {
+      toast.error(t.auth.chooseGradeError);
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      console.log("Attempting registration with:", {
-        name,
-        email,
-        passwordLength: password.length,
-      });
+      await register({ name: name.trim(), email: email.trim().toLowerCase(), password, role: "Student", gradeId: selectedGradeId });
 
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          password,
-        }),
-      });
-
-      const responseText = await response.text();
-      console.log("Response status:", response.status);
-      console.log("Response body:", responseText);
-
-      if (!response.ok) {
-        let errorMessage = responseText;
-        try {
-          const errorJson = JSON.parse(responseText);
-          errorMessage = errorJson.message || errorJson.title || errorJson || responseText;
-        } catch {
-          errorMessage = responseText || "Registration failed";
-        }
-        throw new Error(errorMessage);
-      }
-
-      toast.success("OTP sent to your email!");
+      toast.success(t.auth.otpSent);
       navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err);
-      toast.error(err.message || t.common.error);
+      const responseData = (err as { response?: { data?: { message?: string; title?: string } | string } }).response?.data;
+      toast.error(typeof responseData === "string" ? responseData : responseData?.message || responseData?.title || t.common.error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthLayout title={t.auth.register}>
+    <AuthLayout title={t.auth.registerTitle} subtitle={t.auth.registerSubtitle}>
       <form onSubmit={handleSubmit}>
         <motion.div variants={fieldVariants} initial="hidden" animate="show" custom={0}>
-          <InputField label={t.auth.name} icon={User} required value={name} onChange={(e) => setName(e.target.value)} />
+          <InputField label={t.auth.name} icon={User} placeholder={t.auth.namePlaceholder} required value={name} onChange={(e) => setName(e.target.value)} />
         </motion.div>
 
         <motion.div variants={fieldVariants} initial="hidden" animate="show" custom={1}>
@@ -123,6 +107,7 @@ export default function Register() {
             label={t.auth.email}
             icon={Mail}
             type="email"
+            placeholder={t.auth.emailPlaceholder}
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -134,6 +119,7 @@ export default function Register() {
             label={t.auth.password}
             icon={Lock}
             isPassword
+            placeholder={t.auth.passwordPlaceholder}
             required
             minLength={6}
             value={password}
@@ -144,14 +130,32 @@ export default function Register() {
         <AnimatePresence>
           {password && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-              <PasswordStrength password={password} />
+              <PasswordStrength password={password} labels={[t.auth.passwordShort, t.auth.passwordWeak, t.auth.passwordOkay, t.auth.passwordGood, t.auth.passwordStrong]} />
             </motion.div>
           )}
         </AnimatePresence>
 
-        <motion.div variants={fieldVariants} initial="hidden" animate="show" custom={3}>
-          <Button type="submit" variant="gradient" isLoading={isLoading} className="w-full mt-2">
-            <UserPlus size={18} /> {t.auth.register}
+        <motion.fieldset variants={fieldVariants} initial="hidden" animate="show" custom={3} className="mb-5">
+          <legend className="text-sm font-bold text-ink/70 mb-2 flex items-center gap-2"><GraduationCap size={17} className="text-sky-dark" /> {t.auth.chooseGrade}</legend>
+          {gradesLoading ? (
+            <div className="grid grid-cols-3 gap-2" aria-label={t.common.loading}>{[0, 1, 2].map((item) => <div key={item} className="h-12 rounded-xl bg-ink/5 animate-pulse" />)}</div>
+          ) : gradesFailed ? (
+            <div className="rounded-2xl bg-coral/10 border border-coral/20 p-3 flex items-center justify-between gap-3 text-sm font-semibold text-ink/75"><span>{t.auth.unableToLoadGrades}</span><button type="button" onClick={() => refetch()} className="shrink-0 inline-flex items-center gap-1 text-coral font-extrabold hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-coral rounded"><RefreshCw size={14} /> {t.auth.tryAgain}</button></div>
+          ) : grades.length === 0 ? (
+            <p className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-sm font-semibold text-amber-800">{t.auth.noActiveGrades}</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" role="radiogroup" aria-label={t.auth.chooseGrade}>
+              {grades.map((grade: Grade) => {
+                const selected = selectedGradeId === grade.id;
+                return <button key={grade.id} type="button" role="radio" aria-checked={selected} onClick={() => setSelectedGradeId(grade.id)} className={`min-h-12 rounded-xl border-2 px-3 py-2 text-sm font-extrabold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-sky focus-visible:ring-offset-2 ${selected ? "border-sky-dark bg-sky text-white shadow-sm" : "border-ink/10 bg-white text-ink hover:border-sky/50"}`}><span>{grade.displayName || grade.name}</span>{selected && <span className="ml-1.5" aria-hidden="true">✓</span>}</button>;
+              })}
+            </div>
+          )}
+        </motion.fieldset>
+
+        <motion.div variants={fieldVariants} initial="hidden" animate="show" custom={4}>
+          <Button type="submit" variant="gradient" isLoading={isLoading} disabled={gradesLoading || gradesFailed || grades.length === 0} className="w-full mt-2">
+            <UserPlus size={18} /> {isLoading ? t.auth.creatingAccount : t.auth.createAccount}
           </Button>
         </motion.div>
       </form>
@@ -162,9 +166,9 @@ export default function Register() {
         transition={{ delay: 0.35 }}
         className="text-center text-sm text-ink/50 font-medium mt-5"
       >
-        {t.auth.haveAccount}{" "}
+          {t.auth.haveAccount}{" "}
         <Link to="/login" className="text-sky-dark font-bold hover:underline">
-          {t.auth.login}
+          {t.auth.signIn}
         </Link>
       </motion.p>
 
@@ -174,7 +178,7 @@ export default function Register() {
         transition={{ delay: 0.4 }}
         className="flex items-center gap-1.5 justify-center text-xs text-ink/30 font-semibold mt-3"
       >
-        <Check size={13} className="text-grass-dark" /> Free to join, no ads, kid-safe
+        <Check size={13} className="text-grass-dark" /> {t.auth.studentSafety}
       </motion.div>
     </AuthLayout>
   );

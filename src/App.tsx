@@ -7,16 +7,23 @@ import Register from "./pages/auth/Register";
 import VerifyOtp from "./pages/auth/VerifyOtp";
 
 import StudentDashboard from "./pages/student/Dashboard";
+import SubjectBrowser from "./pages/student/SubjectBrowser";
+import ChapterView from "./pages/student/ChapterView";
+import Papers from "./pages/student/Papers";
+import PaperAttempt from "./pages/student/PaperAttempt";
 import Practice from "./pages/student/Practice";
-import MockExam from "./pages/student/MockExam";
 import Leaderboard from "./pages/student/Leaderboard";
 
 import ParentDashboard from "./pages/parent/ParentDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import ContentStudio from "./pages/admin/ContentStudio";
+import Textbooks from "./pages/admin/Textbooks";
+import LandingPage from "./pages/public/LandingPage";
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       {/* Public auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -24,11 +31,44 @@ export default function App() {
 
       {/* App shell */}
       <Route element={<Layout />}>
+        {/* Student routes */}
         <Route
-          path="/"
+          path="/student"
           element={
             <ProtectedRoute roles={["Student"]}>
               <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subject/:subjectId"
+          element={
+            <ProtectedRoute roles={["Student"]}>
+              <SubjectBrowser />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chapter/:chapterId"
+          element={
+            <ProtectedRoute roles={["Student"]}>
+              <ChapterView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock-exam"
+          element={
+            <ProtectedRoute roles={["Student"]}>
+              <Papers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/papers/:paperId/attempt"
+          element={
+            <ProtectedRoute roles={["Student"]}>
+              <PaperAttempt />
             </ProtectedRoute>
           }
         />
@@ -41,14 +81,6 @@ export default function App() {
           }
         />
         <Route
-          path="/mock-exam/:quizId?"
-          element={
-            <ProtectedRoute roles={["Student"]}>
-              <MockExam />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/leaderboard"
           element={
             <ProtectedRoute roles={["Student"]}>
@@ -57,6 +89,7 @@ export default function App() {
           }
         />
 
+        {/* Parent routes */}
         <Route
           path="/parent"
           element={
@@ -66,6 +99,7 @@ export default function App() {
           }
         />
 
+        {/* Admin routes */}
         <Route
           path="/admin"
           element={
@@ -73,6 +107,18 @@ export default function App() {
               <AdminDashboard />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/admin/content"
+          element={
+            <ProtectedRoute roles={["Admin"]}>
+              <ContentStudio />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/textbooks"
+          element={<ProtectedRoute roles={["Admin"]}><Textbooks /></ProtectedRoute>}
         />
       </Route>
 

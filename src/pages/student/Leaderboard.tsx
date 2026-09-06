@@ -67,7 +67,7 @@ export default function Leaderboard() {
 
                   <div className="text-right shrink-0">
                     <span className="block text-xs font-black text-amber-600">{entry.totalXP} XP</span>
-                    <span className="block text-[11px] font-semibold text-slate-400">{entry.totalMarks} {t.leaderboard.marks}</span>
+                    <span className="block text-[11px] font-semibold text-slate-400">Level {entry.level}</span>
                   </div>
                 </motion.div>
               );

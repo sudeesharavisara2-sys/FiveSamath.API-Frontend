@@ -5,7 +5,7 @@ import SubjectBrowser from "./SubjectBrowser";
 export default function Practice() {
   const { quizId } = useParams();
 
-  if (!quizId) return <SubjectBrowser mode="practice" />;
+  if (!quizId) return <SubjectBrowser />;
 
   return <QuizEngine quizId={Number(quizId)} mode="practice" />;
 }

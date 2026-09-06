@@ -5,13 +5,13 @@ import toast from "react-hot-toast";
 import { Mail, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
-import AuthLayout from "./AuthLayout";
+import AuthLayout from "../../components/auth/AuthLayout";
 import InputField from "../../components/common/InputField";
 import Button from "../../components/common/Button";
 
 const OTP_LENGTH = 6;
 
-function OtpBoxes({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function OtpBoxes({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
   const digits = value.split("").concat(Array(OTP_LENGTH).fill("")).slice(0, OTP_LENGTH);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -48,6 +48,8 @@ function OtpBoxes({ value, onChange }: { value: string; onChange: (v: string) =>
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.04 * i }}
           value={d}
+          aria-label={`${label} ${i + 1}`}
+          autoFocus={i === 0}
           inputMode="numeric"
           maxLength={1}
           onChange={(e) => setDigit(i, e.target.value)}
@@ -74,13 +76,13 @@ export default function VerifyOtp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== OTP_LENGTH) {
-      toast.error("Enter the full 6-digit code");
+      toast.error(t.auth.otpIncomplete);
       return;
     }
     setIsLoading(true);
     try {
       await verifyOtp(email, otp);
-      toast.success("Email verified! You can log in now. ✅");
+      toast.success(t.auth.emailVerified);
       navigate("/login");
     } catch (err: any) {
       toast.error(err?.response?.data ?? t.common.error);
@@ -90,7 +92,7 @@ export default function VerifyOtp() {
   };
 
   return (
-    <AuthLayout title={t.auth.otpTitle} subtitle={t.auth.otpSubtitle}>
+    <AuthLayout title={t.auth.otpTitle} subtitle={`${t.auth.otpEmailIntro} ${email || t.auth.email}.`}>
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
@@ -112,12 +114,12 @@ export default function VerifyOtp() {
           />
         </motion.div>
 
-        <span className="text-sm font-bold text-ink/60 mb-1.5 block">OTP Code</span>
-        <OtpBoxes value={otp} onChange={setOtp} />
+        <span className="text-sm font-bold text-ink/60 mb-1.5 block">{t.auth.otpLabel}</span>
+        <OtpBoxes value={otp} onChange={setOtp} label={t.auth.otpLabel} />
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Button type="submit" variant="gradient" isLoading={isLoading} className="w-full mt-2">
-            <ShieldCheck size={18} /> {t.auth.verify}
+            <ShieldCheck size={18} /> {isLoading ? t.auth.verifying : t.auth.verifyAccount}
           </Button>
         </motion.div>
       </form>
